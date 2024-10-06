@@ -396,7 +396,7 @@ function copyToClipboard(text) {
 
 // Function to validate USDT transaction and show results in UI
 async function validateUSDTTransaction(receiverAddress, amount) {
-    const apiKey = 'R2PY91EKYV6XJNTM63UR2EYX46U3UERE8B'; // Replace with your actual API key
+    const apiKey = 'your_polygonscan_api_key'; // Replace with your actual API key
     const url = `https://api.polygonscan.com/api?module=account&action=txlist&address=${receiverAddress}&startblock=0&endblock=99999999&page=1&offset=99&sort=asc&apikey=${apiKey}`;
     
     const response = await fetch(url);
