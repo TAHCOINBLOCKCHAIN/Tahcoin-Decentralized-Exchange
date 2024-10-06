@@ -32,7 +32,7 @@
             <label for="amount">Amount of Tahcoin:</label>
             <input type="number" id="amount" placeholder="Enter amount">
 
-            <label for="usdt_receiver_address">USDT Receiver Address:</label>
+            <label for="usdt_receiver_address">USDT Receiver Address (Polygon PoS Only):</label>
             <input type="text" id="usdt_receiver_address" placeholder="Enter USDT receiver address">
 
             <button id="createOrder">Create Sell Order</button>
@@ -71,7 +71,7 @@
         </div>
     </div>
     <!-- Include your script -->
-    <script src="app.9.9.9.5.js"></script>
+    <script src="app.9.9.9.9.9.2.js"></script>
     <script>
     document.getElementById('modeToggle').addEventListener('click', function() {
    document.body.classList.toggle('light-mode');

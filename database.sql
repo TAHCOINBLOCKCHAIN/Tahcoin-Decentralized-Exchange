@@ -32,7 +32,7 @@ CREATE TABLE `sell_orders` (
   `public_key` varchar(255) COLLATE utf8mb3_unicode_ci NOT NULL,
   `amount` decimal(29,19) DEFAULT NULL,
   `usdt_receiver_address` varchar(255) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `price_in_usdt` decimal(29,8) NOT NULL,
+  `price_in_usdt` decimal(29,5) NOT NULL,
   `private_key` text COLLATE utf8mb3_unicode_ci NOT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `status` enum('active','successful') COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT 'active'

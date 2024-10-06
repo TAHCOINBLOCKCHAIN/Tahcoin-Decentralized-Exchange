@@ -12,30 +12,42 @@ document.getElementById('createOrder').addEventListener('click', function() {
 
     // Calculate total price for the amount of Tahcoin
     const pricePerTahcoin = 1; // Price for 1 Tahcoin in USDT
-    const totalPriceInUSDT = (amount * pricePerTahcoin).toFixed(3); // Total price for the amount
+    const totalPriceInUSDT = (amount * pricePerTahcoin).toFixed(0); // Total price for the amount
 
-    // Generate a random decimal between 0.000000001 and 0.999999999
-    // Function to generate a random decimal excluding the digit '6'
-function generateRandomDecimal(length) {
-    let result = '';
-    
-    for (let i = 0; i < length; i++) {
-        let digit;
-        do {
-            digit = Math.floor(Math.random() * 10); // Generate a digit from 0 to 9
-        } while (digit === 6); // Exclude the digit '6'
+    // Function to generate a Tahcoin amount in the format "amount.0XXXX"
+    function generateTahcoinAmount(amount) {
+        // Start with the provided amount and add ".0"
+        let result = `${amount}.0`;
         
-        result += digit; // Append the valid digit to the result
+        // Generate four random digits
+        for (let i = 0; i < 4; i++) {
+            const randomDigit = Math.floor(Math.random() * 10); // Random digit from 0 to 9
+            result += randomDigit; // Append the digit to the result
+        }
+        
+        return result; // e.g., "787.01234"
     }
-    
-    return result;
-}
 
-// Generate a random decimal of 10 digits excluding '6'
-const randomDecimal = generateRandomDecimal(5);
+    const tahcoinAmount = generateTahcoinAmount(amount); // Generate the Tahcoin amount
 
-// Output the generated random decimal
-//console.log(randomDecimal); // Example output: "1234567890" (but without '6')
+    // Generate a random decimal of 10 digits excluding '6'
+    function generateRandomDecimal(length) {
+        let result = '';
+        
+        for (let i = 0; i < length; i++) {
+            let digit;
+            do {
+                digit = Math.floor(Math.random() * 10); // Generate a digit from 0 to 9
+            } while (digit === 6); // Exclude the digit '6'
+            
+            result += digit; // Append the valid digit to the result
+        }
+        
+        return result;
+    }
+
+    // Generate a random decimal string of 10 digits excluding '6'
+    const randomDecimal = generateRandomDecimal(10);
 
     // Combine total price with random decimal, ensuring no additional decimal point
     const priceInUSDT = `${totalPriceInUSDT}${randomDecimal}`; // Append random decimal without additional formatting
@@ -50,9 +62,9 @@ const randomDecimal = generateRandomDecimal(5);
             action: 'create_sell_order',
             public_key: publicKey,
             private_key: privateKey,
-            amount: amount.toFixed(19), // Ensure amount is formatted correctly
+            amount: tahcoinAmount, // Use generated Tahcoin amount
             usdt_receiver_address: usdtReceiverAddress,
-            price_in_usdt: priceInUSDT // Include price in USDT
+            price_in_usdt: tahcoinAmount // Include price in USDT
         })
     })
     .then(response => response.json())
@@ -65,22 +77,6 @@ const randomDecimal = generateRandomDecimal(5);
         document.getElementById('message').innerText = "Error occurred while processing the transaction.";
     });
 });
-
-// Function to generate a random 9-digit number excluding '6'
-function generateRandomDecimal(length) {
-    let result = '';
-    
-    for (let i = 0; i < length; i++) {
-        let digit;
-        do {
-            digit = Math.floor(Math.random() * 5); // Generate a digit from 0 to 5
-        } while (digit === 6); // Exclude the digit '6'
-        
-        result += digit; // Append the valid digit to the result
-    }
-    
-    return result;
-}
 
 let currentPage = 1;
 const ordersPerPage = 9; // Number of orders to display per page

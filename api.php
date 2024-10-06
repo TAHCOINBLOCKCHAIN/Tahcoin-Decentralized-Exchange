@@ -4,8 +4,8 @@ ini_set('display_errors', 1);
 header("Content-Type: application/json");
 
 // Database connection settings
-$dsn = 'mysql:host=127.0.0.1;dbname=your_database;charset=utf8';
-$username = 'your_database';
+$dsn = 'mysql:host=127.0.0.1;dbname=your_db_name;charset=utf8';
+$username = 'your_db_username';
 $password = 'your_password';
 
 try {
@@ -24,12 +24,10 @@ if ($action == 'create_sell_order') {
     createSellOrder($request);
 } elseif ($action == 'buy_tahcoin') {
     buyTahcoin($request);
+} elseif ($action == 'load_sell_orders') {
+   loadSellOrders();
 } else {
     echo json_encode(['message' => "Invalid action specified."]);
-}
-
-if ($action == 'load_sell_orders') {
-   loadSellOrders();
 }
 
 function loadSellOrders() {
@@ -44,31 +42,6 @@ function loadSellOrders() {
    } catch (Exception $e) {
        echo json_encode(['message' => "Failed to load sell orders: " . htmlspecialchars($e->getMessage())]);
    }
-}
-
-function encrypt($input, $shiftAmount) {
-    $output = '';
-    foreach (str_split($input) as $char) {
-        // Shift character by the defined amount
-        $shiftedChar = chr(ord($char) + $shiftAmount);
-        $output .= $shiftedChar;
-    }
-    // Reverse the string
-    return strrev($output);
-}
-
-function decrypt($input, $shiftAmount) {
-    // Reverse the string first
-    $reversed = strrev($input);
-    $output = '';
-    
-    foreach (str_split($reversed) as $char) {
-        // Shift character back by the defined amount
-        $originalChar = chr(ord($char) - $shiftAmount);
-        $output .= $originalChar;
-    }
-    
-    return $output;
 }
 
 function createSellOrder($request) {
@@ -86,14 +59,10 @@ function createSellOrder($request) {
         return;
     }
 
-    // Encrypt the private key before storing or processing
-    $shiftAmount = 3; // Define a shift amount for encryption
-    $encryptedPrivateKey = encrypt($privateKey, $shiftAmount);
-
-    // Prepare SQL statement
+    // Prepare SQL statement without encryption
     $stmt = $pdo->prepare("INSERT INTO sell_orders (public_key, amount, usdt_receiver_address, price_in_usdt, private_key) VALUES (?, ?, ?, ?, ?)");
     
-    if ($stmt->execute([$publicKey, $amount, $usdtReceiverAddress, $priceInUSDT, $encryptedPrivateKey])) {
+    if ($stmt->execute([$publicKey, $amount, $usdtReceiverAddress, $priceInUSDT, $privateKey])) {
         echo json_encode(['message' => "Sell order created for {$amount} Tahcoin at {$priceInUSDT} USDT each."]);
     } else {
         echo json_encode(['message' => "Failed to save sell order."]);
@@ -123,16 +92,12 @@ function buyTahcoin($request) {
     try {
         global $publicKey, $privateKey; // Use global variables to access keys
         
-        // Decrypt the private key before using it
-        $shiftAmount = 3; // Same shift amount used for encryption
         if (!isset($privateKey)) {
             throw new Exception("Private key not set.");
         }
         
-        $decryptedPrivateKey = decrypt($privateKey, $shiftAmount); // Decrypt private key
-
-        // Send Tahcoin using the decrypted private key
-        sendTahcoin($publicKey, $decryptedPrivateKey, htmlspecialchars($buyerAddress), htmlspecialchars($actualAmount)); 
+        // Send Tahcoin using the private key directly
+        sendTahcoin($publicKey, htmlspecialchars($privateKey), htmlspecialchars($buyerAddress), htmlspecialchars($actualAmount)); 
 
         // Load existing sell orders and remove the sold order
         $stmt = $pdo->prepare("SELECT * FROM sell_orders WHERE usdt_receiver_address = ? AND amount = ?");
@@ -180,7 +145,7 @@ function saveSuccessfulOrder($order) {
    }
 }
 
-function sendTahcoin($publicKey, $decryptedPrivateKey, $receiverAddress, $amountToSend) {
+function sendTahcoin($publicKey, $privateKey, $receiverAddress, $amountToSend) {
    try {
        if (!$url = 'https://tahriver.online/api_313.php') { 
            throw new Exception("Invalid API URL.");
@@ -188,7 +153,7 @@ function sendTahcoin($publicKey, $decryptedPrivateKey, $receiverAddress, $amount
 
        if (!$data = http_build_query([
            'public_key' => htmlspecialchars($publicKey),
-           'private_key' => htmlspecialchars($decryptedPrivateKey), 
+           'private_key' => htmlspecialchars($privateKey), 
            'receiver_address' => htmlspecialchars($receiverAddress),
            'amount' => htmlspecialchars($amountToSend),
        ])) { 
